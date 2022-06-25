@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022 Firas M. Darwish <firas@dev.sy> .
+ * LICENSED UNDER APACHE 2.0
  * LICENSE IS INCLUDED IN PROJECT FILES.
  */
 
@@ -10,7 +11,7 @@ import (
 	"time"
 )
 
-func (g *guard) Login(userAgent *string, ip *string, props map[string]any) (LoginResult, error) {
+func (g *guard) Login(userAgent *string, ip *string, props map[string]any, params ...int) (LoginResult, error) {
 	validProps, err := g.config.LoginConfig.validateProps(props)
 	if !validProps || err != nil {
 		return nil, err
@@ -20,20 +21,9 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any) (Logi
 
 	delete(props, "password")
 
-	users, err := g.config.UserStore.GetByProps(g.config.UsersTable, props, 2, false)
-	if err != nil {
-		return nil, errors2.Wrap(err, "couldnt login")
-	}
+	user, err := g.getUserByProps(props)
 
-	if users == nil || len(users) == 0 {
-		return nil, IncorrectCredentials
-	}
-
-	if len(users) > 1 {
-		return nil, errors2.Wrapf(Collision, "users table")
-	}
-
-	authedUser := g.config.GetUserInfo(users[0])
+	authedUser := g.config.GetUserInfo(user)
 
 	okPassword := g.config.LoginConfig.PasswordsHasherComparer.Compare(plainPassword, authedUser.Password)
 	if !okPassword {
@@ -43,6 +33,35 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any) (Logi
 	userId := authedUser.ID
 	if userId == nil {
 		return nil, InvalidUserId
+	}
+
+	userStateHash, err := authedUser.userState(g.config.AESSecretKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if !skipTOTP(params) && g.mustValidateTotp(&authedUser) {
+		gState, err := g.state()
+		if err != nil {
+			return nil, err
+		}
+
+		return &loginResult{
+			g:        g,
+			auth:     nil,
+			user:     user,
+			userInfo: &authedUser,
+			totpIntermResp: &totpIntermediateResponse{
+				GuardStateHash: gState,
+				UserStateHash:  userStateHash,
+				Props:          props,
+				Password:       plainPassword,
+				IPAddress:      ip,
+				UserAgent:      userAgent,
+				CreatedAt:      time.Now(),
+			},
+			plainRefreshToken: nil,
+		}, nil
 	}
 
 	uniqueToken, err := generateRandomString(32, allCharset)
@@ -66,11 +85,6 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any) (Logi
 		plainRefreshToken = &plainRefreshTokenStr
 	}
 
-	userStateHash, err := authedUser.userState(g.config.AESSecretKey)
-	if err != nil {
-		return nil, err
-	}
-
 	a := Auth{
 		Guard:              g.name,
 		UserTable:          g.config.UsersTable,
@@ -88,8 +102,9 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any) (Logi
 	}
 
 	return &loginResult{
+		g:                 g,
 		auth:              &a,
-		user:              users[0],
+		user:              user,
 		userInfo:          &authedUser,
 		plainRefreshToken: plainRefreshToken,
 	}, nil

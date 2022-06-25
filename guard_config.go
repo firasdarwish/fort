@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022 Firas M. Darwish <firas@dev.sy> .
+ * LICENSED UNDER APACHE 2.0
  * LICENSE IS INCLUDED IN PROJECT FILES.
  */
 
@@ -15,6 +16,7 @@ import (
 type GuardConfig struct {
 	UserStore   Store
 	UsersTable  string // users, admins, mods ...
+	AuthTable   string
 	GetUserInfo func(map[string]any) UserInfo
 
 	AESSecretKey []byte
@@ -25,6 +27,9 @@ type GuardConfig struct {
 type LoginConfig struct {
 	AllowedHandlers         []string // username, email, mobile ...
 	PasswordsHasherComparer PasswordsHasherComparer
+
+	TOTP                            bool
+	TOTPIntermediateResponseTTLMins int
 
 	ExpiresAfter time.Duration
 	Refreshable  bool

@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022 Firas M. Darwish <firas@dev.sy> .
+ * LICENSED UNDER APACHE 2.0
  * LICENSE IS INCLUDED IN PROJECT FILES.
  */
 
@@ -20,4 +21,11 @@ var (
 	IncorrectCredentials = errors.New("incorrect credentials")
 
 	InvalidUserId = errors.New("invalid user id")
+
+	MustValidateTOTP = errors.New("user must validate TOTP first")
+
+	InvalidTOTPLogin  = errors.New("invalid TOTP login request")
+	IncorrectTOTPCode = errors.New("incorrect TOTP code")
+
+	TOTPLoginDisabled = errors.New("TOTP login is disabled")
 )
