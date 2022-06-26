@@ -32,6 +32,7 @@ type GuardConfig struct {
 	AESSecretKey []byte
 
 	LoginConfig *LoginConfig
+	TOTPConfig  *TOTPConfig
 }
 
 type LoginConfig struct {

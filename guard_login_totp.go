@@ -68,9 +68,25 @@ func (g *guard) LoginTOTP(userAgent *string, ip *string, token string, code stri
 		return nil, InvalidTOTPLogin
 	}
 
-	validTotp := totp.Validate(code, ui.TOTPSecretKey)
-	if !validTotp {
-		return nil, IncorrectTOTPCode
+	if g.config.TOTPConfig == nil {
+		validTotp := totp.Validate(code, ui.TOTPSecretKey)
+		if !validTotp {
+			return nil, IncorrectTOTPCode
+		}
+	} else {
+		validTotp, err := totp.ValidateCustom(code, ui.TOTPSecretKey, g.config.TOTPConfig.Now(), totp.ValidateOpts{
+			Period:    g.config.TOTPConfig.Period,
+			Skew:      g.config.TOTPConfig.Skew,
+			Digits:    g.config.TOTPConfig.Digits,
+			Algorithm: g.config.TOTPConfig.Algorithm,
+		})
+
+		if err != nil {
+			return nil, err
+		}
+		if !validTotp {
+			return nil, IncorrectTOTPCode
+		}
 	}
 
 	totpResp.Props["password"] = totpResp.Password
