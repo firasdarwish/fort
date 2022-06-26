@@ -17,20 +17,19 @@
 package fort
 
 import (
-	"fmt"
-	errors2 "github.com/pkg/errors"
+	"encoding/json"
 	"time"
 )
 
 type Auth struct {
-	Guard     string
-	UserTable string
-	UserId    any
+	Guard     string `json:"guard"`
+	UserTable string `json:"user_table"`
+	UserId    any    `json:"user_id"`
 
-	UserStateHash string
+	UserStateHash string `json:"user_state_hash"`
 
-	UniqueToken        string  // plain, acts like primary key
-	HashedRefreshToken *string // one-way hash, null = un-refreshable
+	UniqueToken        string  `json:"unique_token"`         // plain, acts like primary key
+	HashedRefreshToken *string `json:"hashed_refresh_token"` // one-way hash, null = un-refreshable
 
 	UserAgent *string
 	IPAddress *string
@@ -43,22 +42,31 @@ type Auth struct {
 	LastActivityAt time.Time // at init, = CreatedAt
 }
 
-func (ui *UserInfo) userState(aesSecretKey []byte) (string, error) {
-	s := fmt.Sprintf("%v|%v|%v|%v|%v", ui.ID, ui.Password, ui.TOTPSecretKey, ui.Email, ui.Mobile)
-	hash := hashSha256(s)
-	enc, err := aesEncrypt(aesSecretKey, hash)
+func (g *guard) insertAuth(a *Auth) error {
+	m, err := toMap(a)
 	if err != nil {
-		return "", errors2.Wrap(err, "couldnt encrypt user state")
+		return err
 	}
 
-	return enc, nil
+	err = g.config.AuthStore.Insert(g.config.AuthTable, m)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (ui *UserInfo) validateUserState(aesSecretKey []byte, encryptedHash string) (bool, error) {
-	s, err := ui.userState(aesSecretKey)
+func authFromMap(m map[string]any) (Auth, error) {
+	b, err := json.Marshal(m)
 	if err != nil {
-		return false, err
+		return Auth{}, err
 	}
 
-	return encryptedHash == s, nil
+	var a Auth
+	err = json.Unmarshal(b, &a)
+	if err != nil {
+		return Auth{}, err
+	}
+
+	return a, nil
 }

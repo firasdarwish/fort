@@ -21,7 +21,6 @@ import (
 	"time"
 )
 
-// ValidateOpts provides options for ValidateCustom().
 type TOTPConfig struct {
 	Now func() time.Time
 

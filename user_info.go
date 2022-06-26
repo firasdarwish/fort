@@ -17,6 +17,7 @@
 package fort
 
 import (
+	"fmt"
 	errors2 "github.com/pkg/errors"
 	"time"
 )
@@ -58,4 +59,29 @@ func (g *guard) getUserByProps(props map[string]any) (map[string]any, error) {
 	}
 
 	return users[0], nil
+}
+
+func (ui *UserInfo) userState(g *guard) (string, error) {
+	gState, err := g.state()
+	if err != nil {
+		return "", err
+	}
+
+	s := fmt.Sprintf("%v|%v|%v|%v|%v|%v", ui.ID, ui.Password, ui.TOTPSecretKey, ui.Email, ui.Mobile, gState)
+	hash := hashSha256(s)
+	enc, err := aesEncrypt(g.config.AESSecretKey, hash)
+	if err != nil {
+		return "", errors2.Wrap(err, "couldnt encrypt user state")
+	}
+
+	return enc, nil
+}
+
+func (ui *UserInfo) validateUserState(encryptedHash string, g *guard) (bool, error) {
+	s, err := ui.userState(g)
+	if err != nil {
+		return false, err
+	}
+
+	return encryptedHash == s, nil
 }

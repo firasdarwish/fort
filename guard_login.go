@@ -45,7 +45,7 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any, param
 		return nil, InvalidUserId
 	}
 
-	userStateHash, err := authedUser.userState(g.config.AESSecretKey)
+	userStateHash, err := authedUser.userState(g)
 	if err != nil {
 		return nil, err
 	}

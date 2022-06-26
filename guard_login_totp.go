@@ -59,7 +59,7 @@ func (g *guard) LoginTOTP(userAgent *string, ip *string, token string, code stri
 
 	ui := g.config.GetUserInfo(user)
 
-	userStateHash, err := ui.userState(g.config.AESSecretKey)
+	userStateHash, err := ui.userState(g)
 	if err != nil {
 		return nil, err
 	}
@@ -84,6 +84,7 @@ func (g *guard) LoginTOTP(userAgent *string, ip *string, token string, code stri
 		if err != nil {
 			return nil, err
 		}
+
 		if !validTotp {
 			return nil, IncorrectTOTPCode
 		}

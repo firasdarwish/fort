@@ -25,6 +25,8 @@ import (
 
 type GuardConfig struct {
 	UserStore   Store
+	AuthStore   Store
+	UserIdKey   string
 	UsersTable  string // users, admins, mods ...
 	AuthTable   string
 	GetUserInfo func(map[string]any) UserInfo

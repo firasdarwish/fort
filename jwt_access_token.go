@@ -16,6 +16,11 @@
 
 package fort
 
+import (
+	"github.com/golang-jwt/jwt"
+	"time"
+)
+
 type jwtAccessToken struct {
 	ID          string `json:"jti"`
 	DisplayName string `json:"name"`
@@ -37,4 +42,32 @@ type jwtAccessToken struct {
 
 func (j jwtAccessToken) Valid() error {
 	return nil
+}
+
+func (g *guard) toAccessToken(accessToken string) (*jwtAccessToken, error) {
+	jwt.TimeFunc = func() time.Time {
+		return time.Unix(0, 0)
+	}
+
+	t, err := jwt.ParseWithClaims(accessToken, &jwtAccessToken{}, func(token *jwt.Token) (interface{}, error) {
+		return g.config.LoginConfig.JWTConfig.SecretKey, nil
+	})
+	jwt.TimeFunc = time.Now
+
+	if err != nil {
+		return nil, err
+	}
+
+	// check signing algo && validity
+	if t.Method != g.config.LoginConfig.JWTConfig.Algorithm ||
+		!t.Valid {
+		return nil, InvalidAccessToken
+	}
+
+	claims, ok := t.Claims.(*jwtAccessToken)
+	if !ok {
+		return nil, InvalidAccessToken
+	}
+
+	return claims, nil
 }

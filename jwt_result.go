@@ -56,6 +56,26 @@ func (l *loginResult) JWT(additionalInfo map[string]any) (*JwtResult, error) {
 		return nil, err
 	}
 
+	if l.old_auth != nil {
+		authRowMap, err := toMap(l.auth)
+		if err != nil {
+			return nil, err
+		}
+		err = l.g.config.AuthStore.Update(l.g.config.AuthTable, map[string]any{
+			"unique_token":         l.old_auth.UniqueToken,
+			"user_state_hash":      l.old_auth.UserStateHash,
+			"hashed_refresh_token": l.old_auth.HashedRefreshToken,
+		}, 1, true, authRowMap)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		err = l.g.insertAuth(l.auth)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &JwtResult{
 		AccessToken:           tokenString,
 		RefreshToken:          l.plainRefreshToken,

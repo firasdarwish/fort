@@ -29,6 +29,8 @@ type guard struct {
 type Guard interface {
 	Login(userAgent *string, ip *string, props map[string]any, params ...int) (LoginResult, error)
 	LoginTOTP(userAgent *string, ip *string, token string, code string) (LoginResult, error)
+
+	Refresh(userAgent *string, ip *string, accessToken, refreshToken string) (LoginResult, error)
 }
 
 func (g *guard) state() (string, error) {

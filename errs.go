@@ -38,4 +38,12 @@ var (
 	IncorrectTOTPCode = errors.New("incorrect TOTP code")
 
 	TOTPLoginDisabled = errors.New("TOTP login is disabled")
+
+	NotRefreshable = errors.New("refresh token disabled")
+
+	InvalidAccessToken = errors.New("invalid access token")
+
+	RefreshTokenExpired = errors.New("refresh token expired")
+
+	RefreshTokenRevoked = errors.New("refresh token revoked")
 )

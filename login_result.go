@@ -19,6 +19,7 @@ package fort
 type loginResult struct {
 	g                 *guard
 	auth              *Auth
+	old_auth          *Auth
 	user              map[string]any
 	userInfo          *UserInfo
 	totpIntermResp    *totpIntermediateResponse
