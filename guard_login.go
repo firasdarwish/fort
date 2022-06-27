@@ -32,6 +32,9 @@ func (g *guard) Login(userAgent *string, ip *string, props map[string]any, param
 	delete(props, "password")
 
 	user, err := g.getUserByProps(props)
+	if err != nil {
+		return nil, err
+	}
 
 	authedUser := g.config.GetUserInfo(user)
 

@@ -23,18 +23,18 @@ import (
 
 type jwtAccessToken struct {
 	ID          string `json:"jti"`
-	DisplayName string `json:"name"`
+	DisplayName string `json:"name,omitempty"`
 	UserId      any    `json:"uid"`
 
 	UserStateHash string `json:"x_ush"`
 
-	Issuer   string `json:"iss"`
-	Audience string `json:"aud"`
+	Issuer   string `json:"iss,omitempty"`
+	Audience string `json:"aud,omitempty"`
 
-	Scope string   `json:"scope"`
-	Roles []string `json:"roles"`
+	Scope string   `json:"scope,omitempty"`
+	Roles []string `json:"roles,omitempty"`
 
-	AdditionalInfo map[string]any `json:"additional_info"`
+	AdditionalInfo map[string]any `json:"additional_info,omitempty"`
 
 	IssuedAt  int64 `json:"iat"`
 	ExpiresAt int64 `json:"exp"`

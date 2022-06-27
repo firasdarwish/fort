@@ -36,7 +36,7 @@ type Guard interface {
 func (g *guard) state() (string, error) {
 	s := fmt.Sprintf("%v|%v|%v", g.name, g.config.UsersTable, g.config.AuthTable)
 	hash := hashSha256(s)
-	enc, err := aesDecrypt(g.config.AESSecretKey, hash)
+	enc, err := aesEncrypt(g.config.AESSecretKey, hash)
 	if err != nil {
 		return "", errors2.Wrap(err, "couldnt encrypt guard state")
 	}
