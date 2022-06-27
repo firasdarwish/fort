@@ -112,7 +112,7 @@ func (g *guard) Refresh(userAgent *string, ip *string, accessToken, refreshToken
 	authRow.ExpiresAt = now.Add(g.config.LoginConfig.ExpiresAfter)
 
 	return &loginResult{
-		old_auth:          &old_auth_row,
+		oldAuth:           &old_auth_row,
 		g:                 g,
 		auth:              &authRow,
 		user:              user,

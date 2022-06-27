@@ -19,7 +19,6 @@ package fort
 import (
 	"fmt"
 	errors2 "github.com/pkg/errors"
-	"time"
 )
 
 type UserInfo struct {
@@ -31,13 +30,12 @@ type UserInfo struct {
 	Scope       string
 	Roles       []string
 
-	TOTPSecretKey     string
-	TOTPRecoveryCodes []string
-	TOTPConfirmedAt   *time.Time
+	TOTPSecretKey string
+	TOTPActive    bool
 }
 
 func (g *guard) mustValidateTotp(ui *UserInfo) bool {
-	if g.config.LoginConfig.TOTP && ui.TOTPSecretKey != "" && ui.TOTPConfirmedAt != nil {
+	if g.config.LoginConfig.TOTP && ui.TOTPSecretKey != "" && ui.TOTPActive {
 		return true
 	}
 

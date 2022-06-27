@@ -56,15 +56,15 @@ func (l *loginResult) JWT(additionalInfo map[string]any) (*JwtResult, error) {
 		return nil, err
 	}
 
-	if l.old_auth != nil {
+	if l.oldAuth != nil {
 		authRowMap, err := toMap(l.auth)
 		if err != nil {
 			return nil, err
 		}
 		err = l.g.config.AuthStore.Update(l.g.config.AuthTable, map[string]any{
-			"unique_token":         l.old_auth.UniqueToken,
-			"user_state_hash":      l.old_auth.UserStateHash,
-			"hashed_refresh_token": l.old_auth.HashedRefreshToken,
+			"unique_token":         l.oldAuth.UniqueToken,
+			"user_state_hash":      l.oldAuth.UserStateHash,
+			"hashed_refresh_token": l.oldAuth.HashedRefreshToken,
 		}, 1, true, authRowMap)
 		if err != nil {
 			return nil, err
